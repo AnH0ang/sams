@@ -1,0 +1,20 @@
+[package]
+name = "sams"
+version = "0.1.0"
+edition = "2021"
+authors = ["An Hoang <anhoang31415@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/AnH0ang/sams"
+
+[dependencies]
+age = "0.11.1"
+anyhow = "1.0.95"
+clap = { version = "4.5.28", features = ["derive"] }
+clap_complete_command = "0.6.1"
+colored = "3.0.0"
+ignore = "0.4.23"
+inquire = "0.7.5"
+serde = { version = "1.0.217", features = ["derive"] }
+tempfile = "3.16.0"
+tera = "1.20.0"
+toml = "0.8.20"
