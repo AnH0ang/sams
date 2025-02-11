@@ -141,4 +141,128 @@ mod tests {
         );
         assert_eq!(read_file_contents(&tmp_dir.path().join("test2.txt")), "key");
     }
+
+    #[test]
+    fn test_has_template_suffix() {
+        let path = Path::new("file.txt.tera");
+        assert!(super::has_template_suffix(path, "tera"));
+        assert!(!super::has_template_suffix(path, "txt"));
+
+        let path = Path::new("file.tera");
+        assert!(super::has_template_suffix(path, "tera"));
+
+        let path = Path::new("file");
+        assert!(!super::has_template_suffix(path, "tera"));
+
+        let path = Path::new(".hidden.tera");
+        assert!(super::has_template_suffix(path, "tera"));
+    }
+
+    #[test]
+    fn test_ignore_git_directory() {
+        let tmp_dir = create_temp_dir();
+
+        let git_dir = tmp_dir.path().join(".git");
+        fs::create_dir(&git_dir).unwrap();
+        let git_template = git_dir.join("test.tera");
+        create_template(&git_template, "content");
+
+        let config_path = tmp_dir.path().join("config.toml");
+        let answer_path = tmp_dir.path().join("answers.toml");
+        setup_config(&config_path, &answer_path, "tera");
+        setup_answers(&answer_path, r#"key = "value""#);
+
+        let args = RenderArgs {
+            path: Some(tmp_dir.path().to_path_buf()),
+        };
+        let global_args = GlobalArgs {
+            config_path: config_path.clone(),
+        };
+
+        render(args, global_args).expect("Render failed");
+
+        let output_path = git_dir.join("test");
+        assert!(!output_path.exists());
+    }
+
+    #[test]
+    fn test_process_hidden_template() {
+        let tmp_dir = create_temp_dir();
+
+        let hidden_template = tmp_dir.path().join(".env.tera");
+        create_template(&hidden_template, "key={{ key }}");
+
+        let config_path = tmp_dir.path().join("config.toml");
+        let answer_path = tmp_dir.path().join("answers.toml");
+        setup_config(&config_path, &answer_path, "tera");
+        setup_answers(&answer_path, r#"key = "value""#);
+
+        let args = RenderArgs {
+            path: Some(tmp_dir.path().to_path_buf()),
+        };
+        let global_args = GlobalArgs { config_path };
+
+        render(args, global_args).unwrap();
+
+        let output_path = tmp_dir.path().join(".env");
+        assert!(output_path.exists());
+        assert_eq!(read_file_contents(&output_path), "key=value");
+    }
+
+    #[test]
+    fn test_missing_answer_file() {
+        let tmp_dir = create_temp_dir();
+
+        let config_path = tmp_dir.path().join("config.toml");
+        let answer_path = tmp_dir.path().join("nonexistent.toml");
+        setup_config(&config_path, &answer_path, "tera");
+
+        let args = RenderArgs {
+            path: Some(tmp_dir.path().to_path_buf()),
+        };
+        let global_args = GlobalArgs { config_path };
+
+        let result = render(args, global_args);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invalid_toml_in_answers() {
+        let tmp_dir = create_temp_dir();
+
+        let answer_path = tmp_dir.path().join("answers.toml");
+        setup_answers(&answer_path, "invalid = toml here");
+
+        let config_path = tmp_dir.path().join("config.toml");
+        setup_config(&config_path, &answer_path, "tera");
+
+        let args = RenderArgs {
+            path: Some(tmp_dir.path().to_path_buf()),
+        };
+        let global_args = GlobalArgs { config_path };
+
+        let result = render(args, global_args);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invalid_template_syntax() {
+        let tmp_dir = create_temp_dir();
+
+        let template_path = tmp_dir.path().join("invalid.tera");
+        create_template(&template_path, "{{ invalid syntax }}");
+
+        let config_path = tmp_dir.path().join("config.toml");
+        let answer_path = tmp_dir.path().join("answers.toml");
+        setup_config(&config_path, &answer_path, "tera");
+        setup_answers(&answer_path, r#"key = "value""#);
+
+        let args = RenderArgs {
+            path: Some(tmp_dir.path().to_path_buf()),
+        };
+        let global_args = GlobalArgs { config_path };
+
+        let result = render(args, global_args);
+        assert!(result.is_err());
+    }
 }
