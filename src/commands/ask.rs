@@ -3,10 +3,10 @@ use std::fs;
 
 use anyhow::{Context, Result};
 use inquire::{Select, Text};
-use toml::{self, Value};
+use toml;
 
 use crate::args::{AskArgs, GlobalArgs};
-use crate::config::{read_config, DataType, Parameter};
+use crate::config::{read_config, DataType, Parameter, Value};
 
 fn parse_input(input: &str, data_type: DataType) -> Result<Value> {
     match data_type {

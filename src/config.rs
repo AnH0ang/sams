@@ -1,10 +1,11 @@
+use std::fmt::{self, Display, Formatter};
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use toml::{self, Value};
+use toml;
 
 /// The configuration of the application
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -146,8 +147,28 @@ pub fn read_config(file_path: &PathBuf) -> Result<Config> {
     Ok(config)
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[serde(untagged)]
+pub enum Value {
+    Integer(i64),
+    Float(f64),
+    String(String),
+}
+
+impl Display for Value {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            Value::Integer(i) => write!(f, "{}", i),
+            Value::Float(fl) => write!(f, "{}", fl),
+            Value::String(s) => write!(f, "{}", s),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use toml::Table;
+
     use super::*;
 
     #[test]
@@ -201,7 +222,7 @@ type = "str"
         assert_eq!(toml_string.trim(), expected_toml);
 
         // Deserialize from TOML
-        let deserialized_config: Value = toml::from_str(&toml_string).unwrap();
+        let deserialized_config: Table = toml::from_str(&toml_string).unwrap();
         println!("{:?}", deserialized_config.get("answer_file").unwrap());
         // assert_eq!(config, deserialized_config);
     }
