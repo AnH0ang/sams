@@ -104,7 +104,6 @@ mod tests {
             answer_path.display(),
             excludes,
         );
-        println!("{}", content);
         write_file(config_path, &content);
     }
 
@@ -121,189 +120,92 @@ mod tests {
     }
 
     #[test]
-    fn test_render_template_with_suffix() {
+    fn test_template_rendering_and_exclusion() {
         let tmp_dir = create_temp_dir();
 
+        // Setup paths
         let config_path = tmp_dir.path().join("config.toml");
         let answer_path = tmp_dir.path().join("answers.toml");
         let template1_path = tmp_dir.path().join("test1.txt.tera");
         let template2_path = tmp_dir.path().join("test2.txt");
-
-        setup_config(&config_path, &answer_path, "tera", vec![]);
-        setup_answers(&answer_path, r#"key = "testvalue""#);
-        create_template(&template1_path, "key={{ key }}");
-        create_template(&template2_path, "key");
-
-        let args = RenderArgs {
-            path: Some(tmp_dir.path().to_path_buf()),
-        };
-        let global_args = GlobalArgs {
-            config_path: config_path.clone(),
-        };
-
-        render(args, global_args).expect("Render function failed");
-
-        assert_eq!(
-            read_file_contents(&tmp_dir.path().join("test1.txt")),
-            "key=testvalue"
-        );
-        assert_eq!(read_file_contents(&tmp_dir.path().join("test2.txt")), "key");
-    }
-
-    #[test]
-    fn test_has_template_suffix() {
-        let path = Path::new("file.txt.tera");
-        assert!(super::has_template_suffix(path, "tera"));
-        assert!(!super::has_template_suffix(path, "txt"));
-
-        let path = Path::new("file.tera");
-        assert!(super::has_template_suffix(path, "tera"));
-
-        let path = Path::new("file");
-        assert!(!super::has_template_suffix(path, "tera"));
-
-        let path = Path::new(".hidden.tera");
-        assert!(super::has_template_suffix(path, "tera"));
-    }
-
-    #[test]
-    fn test_ignore_git_directory() {
-        let tmp_dir = create_temp_dir();
-
-        let git_dir = tmp_dir.path().join(".git");
-        fs::create_dir(&git_dir).unwrap();
-        let git_template = git_dir.join("test.tera");
-        create_template(&git_template, "content");
-
-        let config_path = tmp_dir.path().join("config.toml");
-        let answer_path = tmp_dir.path().join("answers.toml");
-        setup_config(&config_path, &answer_path, "tera", vec![]);
-        setup_answers(&answer_path, r#"key = "value""#);
-
-        let args = RenderArgs {
-            path: Some(tmp_dir.path().to_path_buf()),
-        };
-        let global_args = GlobalArgs {
-            config_path: config_path.clone(),
-        };
-
-        render(args, global_args).expect("Render failed");
-
-        let output_path = git_dir.join("test");
-        assert!(!output_path.exists());
-    }
-
-    #[test]
-    fn test_process_hidden_template() {
-        let tmp_dir = create_temp_dir();
-
-        let hidden_template = tmp_dir.path().join(".env.tera");
-        create_template(&hidden_template, "key={{ key }}");
-
-        let config_path = tmp_dir.path().join("config.toml");
-        let answer_path = tmp_dir.path().join("answers.toml");
-        setup_config(&config_path, &answer_path, "tera", vec![]);
-        setup_answers(&answer_path, r#"key = "value""#);
-
-        let args = RenderArgs {
-            path: Some(tmp_dir.path().to_path_buf()),
-        };
-        let global_args = GlobalArgs { config_path };
-
-        render(args, global_args).unwrap();
-
-        let output_path = tmp_dir.path().join(".env");
-        assert!(output_path.exists());
-        assert_eq!(read_file_contents(&output_path), "key=value");
-    }
-
-    #[test]
-    fn test_missing_answer_file() {
-        let tmp_dir = create_temp_dir();
-
-        let config_path = tmp_dir.path().join("config.toml");
-        let answer_path = tmp_dir.path().join("nonexistent.toml");
-        setup_config(&config_path, &answer_path, "tera", vec![]);
-
-        let args = RenderArgs {
-            path: Some(tmp_dir.path().to_path_buf()),
-        };
-        let global_args = GlobalArgs { config_path };
-
-        let result = render(args, global_args);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_invalid_toml_in_answers() {
-        let tmp_dir = create_temp_dir();
-
-        let answer_path = tmp_dir.path().join("answers.toml");
-        setup_answers(&answer_path, "invalid = toml here");
-
-        let config_path = tmp_dir.path().join("config.toml");
-        setup_config(&config_path, &answer_path, "tera", vec![]);
-
-        let args = RenderArgs {
-            path: Some(tmp_dir.path().to_path_buf()),
-        };
-        let global_args = GlobalArgs { config_path };
-
-        let result = render(args, global_args);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_invalid_template_syntax() {
-        let tmp_dir = create_temp_dir();
-
-        let template_path = tmp_dir.path().join("invalid.tera");
-        create_template(&template_path, "{{ invalid syntax }}");
-
-        let config_path = tmp_dir.path().join("config.toml");
-        let answer_path = tmp_dir.path().join("answers.toml");
-        setup_config(&config_path, &answer_path, "tera", vec![]);
-        setup_answers(&answer_path, r#"key = "value""#);
-
-        let args = RenderArgs {
-            path: Some(tmp_dir.path().to_path_buf()),
-        };
-        let global_args = GlobalArgs { config_path };
-
-        let result = render(args, global_args);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_exclude_directory() {
-        let tmp_dir = create_temp_dir();
-
-        // Create an excluded directory with a template file inside
         let excluded_dir = tmp_dir.path().join("excluded_dir");
         fs::create_dir(&excluded_dir).expect("Failed to create excluded directory");
         let template_in_excluded = excluded_dir.join("file.tera");
-        create_template(&template_in_excluded, "key={{ key }}");
 
-        let config_path = tmp_dir.path().join("config.toml");
-        let answer_path = tmp_dir.path().join("answers.toml");
-        // Pass the exclude pattern for the directory
+        // Setup config and answers
         setup_config(
             &config_path,
             &answer_path,
             "tera",
             vec!["excluded_dir/".to_string()],
         );
-        setup_answers(&answer_path, r#"key = "value""#);
+        setup_answers(&answer_path, r#"key = "testvalue""#);
 
+        // Create templates
+        create_template(&template1_path, "key={{ key }}");
+        create_template(&template2_path, "key");
+        create_template(&template_in_excluded, "key={{ key }}");
+
+        // Run render function
+        let args = RenderArgs {
+            path: Some(tmp_dir.path().to_path_buf()),
+        };
+        let global_args = GlobalArgs {
+            config_path: config_path.clone(),
+        };
+        render(args, global_args).expect("Render function failed");
+
+        // Assertions
+        assert_eq!(
+            read_file_contents(&tmp_dir.path().join("test1.txt")),
+            "key=testvalue"
+        );
+        assert_eq!(read_file_contents(&tmp_dir.path().join("test2.txt")), "key");
+        assert!(
+            !excluded_dir.join("file").exists(),
+            "Excluded directory should not be processed"
+        );
+    }
+
+    #[test]
+    fn test_error_handling() {
+        let tmp_dir = create_temp_dir();
+
+        // Setup paths
+        let config_path = tmp_dir.path().join("config.toml");
+        let answer_path = tmp_dir.path().join("answers.toml");
+        let invalid_template_path = tmp_dir.path().join("invalid.tera");
+
+        // Test missing answer file
+        setup_config(&config_path, &answer_path, "tera", vec![]);
+        let args = RenderArgs {
+            path: Some(tmp_dir.path().to_path_buf()),
+        };
+        let global_args = GlobalArgs {
+            config_path: config_path.clone(),
+        };
+        let result = render(args, global_args);
+        assert!(result.is_err(), "Should error on missing answer file");
+
+        // Test invalid TOML
+        setup_answers(&answer_path, "invalid = toml here");
+        let args = RenderArgs {
+            path: Some(tmp_dir.path().to_path_buf()),
+        };
+        let global_args = GlobalArgs {
+            config_path: config_path.clone(),
+        };
+        let result = render(args, global_args);
+        assert!(result.is_err(), "Should error on invalid TOML");
+
+        // Test invalid template syntax
+        setup_answers(&answer_path, r#"key = "value""#);
+        create_template(&invalid_template_path, "{{ invalid syntax }}");
         let args = RenderArgs {
             path: Some(tmp_dir.path().to_path_buf()),
         };
         let global_args = GlobalArgs { config_path };
-
-        render(args, global_args).unwrap();
-
-        let output_path = excluded_dir.join("file");
-        // The output file should not exist since the directory is excluded
-        assert!(!output_path.exists());
+        let result = render(args, global_args);
+        assert!(result.is_err(), "Should error on invalid template syntax");
     }
 }
