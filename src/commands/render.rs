@@ -15,7 +15,7 @@ pub fn render(args: RenderArgs, global_args: GlobalArgs) -> Result<()> {
     let config = read_config(&global_args.config_path)?;
     let answers = read_answers(&config.answer_file)?;
     let context = TeraContext::from_serialize(answers)?;
-    let overrides = default_overrides()?;
+    let overrides = overrides(config.exclude)?;
 
     let root_path = args.path.as_deref().unwrap_or(Path::new("."));
 
@@ -45,11 +45,13 @@ fn has_template_suffix(path: &Path, suffix: &str) -> bool {
     path.extension().and_then(OsStr::to_str) == Some(suffix)
 }
 
-fn default_overrides() -> Result<Override> {
-    OverrideBuilder::new(".")
-        .add("!.git/")?
-        .build()
-        .context("Failed to build ignore overrides")
+fn overrides(excludes: Vec<String>) -> Result<Override> {
+    let mut ov = OverrideBuilder::new(".");
+    ov.add("!.git/")?;
+    for exclude in excludes {
+        ov.add(&format!("!{}", exclude))?;
+    }
+    ov.build().context("Failed to build ignore overrides")
 }
 
 fn process_template(path: &Path, context: &TeraContext) -> Result<()> {
@@ -86,18 +88,24 @@ mod tests {
             .expect("Failed to write file");
     }
 
-    fn setup_config(config_path: &PathBuf, answer_path: &Path, template_suffix: &str) {
-        write_file(
-            config_path,
-            &format!(
-                r#"
-                template_suffix = "{}"
-                answer_file = "{}"
-                "#,
-                template_suffix,
-                answer_path.display(),
-            ),
+    fn setup_config(
+        config_path: &PathBuf,
+        answer_path: &Path,
+        template_suffix: &str,
+        excludes: Vec<String>,
+    ) {
+        let content = format!(
+            r#"
+            template_suffix = "{}"
+            answer_file = "{}"
+            exclude = {:?}
+            "#,
+            template_suffix,
+            answer_path.display(),
+            excludes,
         );
+        println!("{}", content);
+        write_file(config_path, &content);
     }
 
     fn setup_answers(answer_path: &PathBuf, answers: &str) {
@@ -121,7 +129,7 @@ mod tests {
         let template1_path = tmp_dir.path().join("test1.txt.tera");
         let template2_path = tmp_dir.path().join("test2.txt");
 
-        setup_config(&config_path, &answer_path, "tera");
+        setup_config(&config_path, &answer_path, "tera", vec![]);
         setup_answers(&answer_path, r#"key = "testvalue""#);
         create_template(&template1_path, "key={{ key }}");
         create_template(&template2_path, "key");
@@ -169,7 +177,7 @@ mod tests {
 
         let config_path = tmp_dir.path().join("config.toml");
         let answer_path = tmp_dir.path().join("answers.toml");
-        setup_config(&config_path, &answer_path, "tera");
+        setup_config(&config_path, &answer_path, "tera", vec![]);
         setup_answers(&answer_path, r#"key = "value""#);
 
         let args = RenderArgs {
@@ -194,7 +202,7 @@ mod tests {
 
         let config_path = tmp_dir.path().join("config.toml");
         let answer_path = tmp_dir.path().join("answers.toml");
-        setup_config(&config_path, &answer_path, "tera");
+        setup_config(&config_path, &answer_path, "tera", vec![]);
         setup_answers(&answer_path, r#"key = "value""#);
 
         let args = RenderArgs {
@@ -215,7 +223,7 @@ mod tests {
 
         let config_path = tmp_dir.path().join("config.toml");
         let answer_path = tmp_dir.path().join("nonexistent.toml");
-        setup_config(&config_path, &answer_path, "tera");
+        setup_config(&config_path, &answer_path, "tera", vec![]);
 
         let args = RenderArgs {
             path: Some(tmp_dir.path().to_path_buf()),
@@ -234,7 +242,7 @@ mod tests {
         setup_answers(&answer_path, "invalid = toml here");
 
         let config_path = tmp_dir.path().join("config.toml");
-        setup_config(&config_path, &answer_path, "tera");
+        setup_config(&config_path, &answer_path, "tera", vec![]);
 
         let args = RenderArgs {
             path: Some(tmp_dir.path().to_path_buf()),
@@ -254,7 +262,7 @@ mod tests {
 
         let config_path = tmp_dir.path().join("config.toml");
         let answer_path = tmp_dir.path().join("answers.toml");
-        setup_config(&config_path, &answer_path, "tera");
+        setup_config(&config_path, &answer_path, "tera", vec![]);
         setup_answers(&answer_path, r#"key = "value""#);
 
         let args = RenderArgs {
@@ -264,5 +272,38 @@ mod tests {
 
         let result = render(args, global_args);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_exclude_directory() {
+        let tmp_dir = create_temp_dir();
+
+        // Create an excluded directory with a template file inside
+        let excluded_dir = tmp_dir.path().join("excluded_dir");
+        fs::create_dir(&excluded_dir).expect("Failed to create excluded directory");
+        let template_in_excluded = excluded_dir.join("file.tera");
+        create_template(&template_in_excluded, "key={{ key }}");
+
+        let config_path = tmp_dir.path().join("config.toml");
+        let answer_path = tmp_dir.path().join("answers.toml");
+        // Pass the exclude pattern for the directory
+        setup_config(
+            &config_path,
+            &answer_path,
+            "tera",
+            vec!["excluded_dir/".to_string()],
+        );
+        setup_answers(&answer_path, r#"key = "value""#);
+
+        let args = RenderArgs {
+            path: Some(tmp_dir.path().to_path_buf()),
+        };
+        let global_args = GlobalArgs { config_path };
+
+        render(args, global_args).unwrap();
+
+        let output_path = excluded_dir.join("file");
+        // The output file should not exist since the directory is excluded
+        assert!(!output_path.exists());
     }
 }
