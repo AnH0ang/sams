@@ -25,6 +25,10 @@ pub struct Config {
     /// The list of parameters to ask the user
     #[serde(default = "default_parameters")]
     pub parameters: Vec<Parameter>,
+
+    /// List of install task to run
+    #[serde(default = "default_tasks")]
+    pub tasks: Vec<Task>,
 }
 
 impl Default for Config {
@@ -35,6 +39,7 @@ impl Default for Config {
             template_suffix: default_template_suffix(),
             respect_gitignore: default_respect_gitignore(),
             parameters: default_parameters(),
+            tasks: default_tasks(),
         }
     }
 }
@@ -56,6 +61,10 @@ fn default_respect_gitignore() -> bool {
 }
 
 fn default_parameters() -> Vec<Parameter> {
+    Vec::new()
+}
+
+fn default_tasks() -> Vec<Task> {
     Vec::new()
 }
 
@@ -87,6 +96,32 @@ pub enum Parameter {
 
 fn default_data_type() -> DataType {
     DataType::Str
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub struct Task {
+    /// The script to run
+    pub script: PathBuf,
+
+    /// The name of the task
+    pub name: Option<String>,
+
+    /// The working directory in which the command will be executed
+    #[serde(default = "default_workdir")]
+    pub workdir: PathBuf,
+
+    /// The shell to use to run the command
+    #[serde(default = "default_shell")]
+    pub shell: String,
+}
+
+fn default_workdir() -> PathBuf {
+    PathBuf::from(".")
+}
+
+fn default_shell() -> String {
+    "sh".to_string()
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -136,6 +171,7 @@ mod tests {
                     data_type: DataType::Str,
                 },
             ],
+            tasks: vec![],
         };
 
         // Expected readable YAML
@@ -144,6 +180,7 @@ answer_file = ".answers.toml"
 exclude = []
 template_suffix = "tpl"
 respect_gitignore = true
+tasks = []
 
 [[parameters]]
 kind = "select"

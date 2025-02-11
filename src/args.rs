@@ -28,6 +28,9 @@ pub enum Commands {
     /// Render dotfile templates
     Render(RenderArgs),
 
+    /// Run install scripts
+    Install(InstallArgs),
+
     /// Generate shell completions
     Completions {
         /// The shell to generate the completions for
@@ -74,3 +77,6 @@ pub struct RenderArgs {
     /// Path to the template files
     pub path: Option<PathBuf>,
 }
+
+#[derive(Clone, Debug, clap::Parser)]
+pub struct InstallArgs {}

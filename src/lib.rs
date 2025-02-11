@@ -32,5 +32,9 @@ pub fn run(
             commands::init::init(args)?;
             Ok(ExitCode::SUCCESS)
         },
+        Commands::Install(args) => {
+            commands::install::install(args, global_args)?;
+            Ok(ExitCode::SUCCESS)
+        },
     }
 }
