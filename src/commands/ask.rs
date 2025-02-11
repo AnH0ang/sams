@@ -74,3 +74,24 @@ pub fn ask(_args: AskArgs, global_args: GlobalArgs) -> Result<()> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_input() {
+        assert_eq!(
+            parse_input("42", DataType::Int).unwrap(),
+            Value::Integer(42)
+        );
+        assert_eq!(
+            parse_input("1.23", DataType::Float).unwrap(),
+            Value::Float(1.23)
+        );
+        assert_eq!(
+            parse_input("hello", DataType::Str).unwrap(),
+            Value::String("hello".into())
+        );
+    }
+}
