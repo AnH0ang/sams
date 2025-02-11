@@ -65,7 +65,7 @@ fn write_config(path: &Path, content: &str, force: bool) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use std::{env, fs};
+    use std::fs;
 
     use tempfile::tempdir;
 
@@ -73,70 +73,83 @@ mod tests {
     use crate::args::InitArgs;
 
     #[test]
-    fn test_init_creates_config_file() {
-        let temp_dir = tempdir().unwrap();
-        env::set_current_dir(&temp_dir).unwrap();
-        let config_file = temp_dir.path().join("config.toml");
+    fn test_init_creates_config_and_git_repo_based_on_no_git() {
+        let cases = vec![
+            (true, false), // no_git=true: expect no .git
+            (false, true), // no_git=false: expect .git
+        ];
 
-        let args = InitArgs {
-            dir: temp_dir.path().to_path_buf(),
-            file: config_file.clone(),
-            no_git: true,
-            force: false,
-        };
+        for (no_git, expect_git) in cases {
+            let temp_dir = tempdir().unwrap();
+            let config_file = temp_dir.path().join("config.toml");
 
-        assert!(init(args).is_ok());
-        assert!(config_file.exists());
+            let args = InitArgs {
+                dir: temp_dir.path().to_path_buf(),
+                file: config_file.clone(),
+                no_git,
+                force: false,
+            };
+
+            let result = init(args);
+            assert!(result.is_ok(), "no_git={} should succeed", no_git);
+            assert!(
+                config_file.exists(),
+                "config file should exist when no_git={}",
+                no_git
+            );
+
+            let git_dir = temp_dir.path().join(".git");
+            assert_eq!(
+                git_dir.exists(),
+                expect_git,
+                "git repo existence check failed for no_git={}",
+                no_git
+            );
+        }
     }
 
     #[test]
-    fn test_init_creates_git_repo() {
-        let temp_dir = tempdir().unwrap();
-        let config_file = temp_dir.path().join("config.toml");
+    fn test_force_flag_behavior() {
+        let cases = vec![
+            (false, false, false), // force=false: expect error and no overwrite
+            (true, true, true),    // force=true: expect success and overwrite
+        ];
 
-        let args = InitArgs {
-            dir: temp_dir.path().to_path_buf(),
-            file: config_file.clone(),
-            no_git: false,
-            force: false,
-        };
+        for (force, expect_success, expect_content_changed) in cases {
+            let temp_dir = tempdir().unwrap();
+            let config_file = temp_dir.path().join("config.toml");
+            fs::write(&config_file, "old content").unwrap();
 
-        assert!(init(args).is_ok());
-        assert!(config_file.exists());
-        assert!(temp_dir.path().join(".git").exists());
-    }
+            let args = InitArgs {
+                dir: temp_dir.path().to_path_buf(),
+                file: config_file.clone(),
+                no_git: true,
+                force,
+            };
 
-    #[test]
-    fn test_init_does_not_overwrite_existing_file_without_force() {
-        let temp_dir = tempdir().unwrap();
-        let config_file = temp_dir.path().join("config.toml");
-        fs::write(&config_file, "existing content").unwrap();
+            let result = init(args);
+            assert_eq!(
+                result.is_ok(),
+                expect_success,
+                "force={} should result in success={}",
+                force,
+                expect_success
+            );
 
-        let args = InitArgs {
-            dir: temp_dir.path().to_path_buf(),
-            file: config_file.clone(),
-            no_git: true,
-            force: false,
-        };
-
-        assert!(init(args).is_err());
-        assert_eq!(fs::read_to_string(config_file).unwrap(), "existing content");
-    }
-
-    #[test]
-    fn test_init_overwrites_existing_file_with_force() {
-        let temp_dir = tempdir().unwrap();
-        let config_file = temp_dir.path().join("config.toml");
-        fs::write(&config_file, "old content").unwrap();
-
-        let args = InitArgs {
-            dir: temp_dir.path().to_path_buf(),
-            file: config_file.clone(),
-            no_git: true,
-            force: true,
-        };
-
-        assert!(init(args).is_ok());
-        assert_ne!(fs::read_to_string(config_file).unwrap(), "old content");
+            let content = fs::read_to_string(&config_file).unwrap();
+            if expect_content_changed {
+                assert_ne!(
+                    content, "old content",
+                    "force={} should overwrite content",
+                    force
+                );
+            } else {
+                assert_eq!(
+                    content, "old content",
+                    "force={} should not overwrite content",
+                    force
+                );
+            }
+        }
     }
 }
