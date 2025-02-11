@@ -1,0 +1,14 @@
+fail_fast: false
+
+repos:
+  - repo: local
+    hooks:
+      - id: generate-json-schema
+        name: Generate JSON schema
+        entry: cargo run -- generate-json-schema
+        language: system
+        types: [rust]
+        pass_filenames: false
+
+ci:
+  skip: [generate-json-schema]
