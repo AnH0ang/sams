@@ -10,6 +10,7 @@
       "type": "string"
     },
     "exclude": {
+      "description": "The list of files to exclude when copying the template",
       "default": [],
       "type": "array",
       "items": {
@@ -25,6 +26,7 @@
       }
     },
     "respect_gitignore": {
+      "description": "Whether to respect the `.gitignore` file when copying the template",
       "default": true,
       "type": "boolean"
     },
@@ -37,6 +39,7 @@
       }
     },
     "template_suffix": {
+      "description": "The suffix of the template files",
       "default": "tpl",
       "type": "string"
     }

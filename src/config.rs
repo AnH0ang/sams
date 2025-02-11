@@ -15,12 +15,15 @@ pub struct Config {
     #[serde(default = "default_answer_file")]
     pub answer_file: PathBuf,
 
+    /// The list of files to exclude when copying the template
     #[serde(default = "default_exclude")]
     pub exclude: Vec<String>,
 
+    /// The suffix of the template files
     #[serde(default = "default_template_suffix")]
     pub template_suffix: String,
 
+    /// Whether to respect the `.gitignore` file when copying the template
     #[serde(default = "default_respect_gitignore")]
     pub respect_gitignore: bool,
 
