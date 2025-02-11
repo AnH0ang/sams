@@ -45,23 +45,32 @@ pub struct GlobalArgs {
 
 #[derive(Clone, Debug, clap::Parser)]
 pub struct InitArgs {
+    /// Directory to initialize
+    #[arg(default_value = ".")]
+    pub dir: PathBuf,
+
+    /// Do not initialize a git repository
     #[arg(long)]
     pub no_git: bool,
 
+    /// Config file
     #[arg(long, short, default_value = "sams.toml")]
     pub file: PathBuf,
 
+    /// Overwrite existing config file
     #[arg(long)]
     pub force: bool,
 }
 
 #[derive(Clone, Debug, clap::Parser)]
 pub struct AskArgs {
+    /// Overwrite existing answers file
     #[arg(long)]
     pub force: bool,
 }
 
 #[derive(Clone, Debug, clap::Parser)]
 pub struct RenderArgs {
+    /// Path to the template files
     pub path: Option<PathBuf>,
 }
