@@ -37,6 +37,9 @@ pub enum Commands {
         #[arg(value_enum)]
         shell: clap_complete_command::Shell,
     },
+
+    /// Generate json schema for `sams.toml` config file
+    GenerateJsonSchema(GenerateJsonSchemaArgs),
 }
 
 #[derive(Clone, Debug, clap::Parser)]
@@ -80,3 +83,10 @@ pub struct RenderArgs {
 
 #[derive(Clone, Debug, clap::Parser)]
 pub struct InstallArgs {}
+
+#[derive(Clone, Debug, clap::Parser)]
+pub struct GenerateJsonSchemaArgs {
+    /// Output file
+    #[arg(short, long, default_value = "sams.schema.json")]
+    pub file: PathBuf,
+}

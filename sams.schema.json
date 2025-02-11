@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Config",
+  "description": "The configuration of the application",
+  "type": "object",
+  "properties": {
+    "answer_file": {
+      "description": "The file in which user parameter will be stored",
+      "default": ".sams-answers.toml",
+      "type": "string"
+    },
+    "exclude": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "parameters": {
+      "description": "The list of parameters to ask the user",
+      "default": [],
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Parameter"
+      }
+    },
+    "respect_gitignore": {
+      "default": true,
+      "type": "boolean"
+    },
+    "tasks": {
+      "description": "List of install task to run",
+      "default": [],
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Task"
+      }
+    },
+    "template_suffix": {
+      "default": "tpl",
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "DataType": {
+      "type": "string",
+      "enum": [
+        "int",
+        "float",
+        "str"
+      ]
+    },
+    "Parameter": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "name",
+            "options"
+          ],
+          "properties": {
+            "description": {
+              "description": "The description which will be displayed in the prompt",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "select"
+              ]
+            },
+            "name": {
+              "description": "The name of the parameter",
+              "type": "string"
+            },
+            "options": {
+              "description": "A list of options to choose from",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Value"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "name"
+          ],
+          "properties": {
+            "default": {
+              "description": "The default value which will be used if the user does not provide any input",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": {
+              "description": "The description which will be displayed in the prompt",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "text"
+              ]
+            },
+            "name": {
+              "description": "The name of the parameter",
+              "type": "string"
+            },
+            "placeholder": {
+              "description": "A placeholder value which will be displayed in the prompt",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "type": {
+              "description": "The type of the user parameter",
+              "default": "str",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/DataType"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Task": {
+      "type": "object",
+      "required": [
+        "script"
+      ],
+      "properties": {
+        "name": {
+          "description": "The name of the task",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "script": {
+          "description": "The script to run",
+          "type": "string"
+        },
+        "shell": {
+          "description": "The shell to use to run the command",
+          "default": "sh",
+          "type": "string"
+        },
+        "workdir": {
+          "description": "The working directory in which the command will be executed",
+          "default": ".",
+          "type": "string"
+        }
+      }
+    },
+    "Value": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "int64"
+        },
+        {
+          "type": "number",
+          "format": "double"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

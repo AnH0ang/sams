@@ -4,11 +4,12 @@ use std::io::Read;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use toml;
 
 /// The configuration of the application
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, JsonSchema)]
 pub struct Config {
     /// The file in which user parameter will be stored
     #[serde(default = "default_answer_file")]
@@ -69,7 +70,7 @@ fn default_tasks() -> Vec<Task> {
     Vec::new()
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, JsonSchema)]
 #[serde(tag = "kind", rename_all = "lowercase")]
 pub enum Parameter {
     Select {
@@ -99,7 +100,7 @@ fn default_data_type() -> DataType {
     DataType::Str
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, JsonSchema)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub struct Task {
     /// The script to run
@@ -125,7 +126,7 @@ fn default_shell() -> String {
     "sh".to_string()
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum DataType {
     Int,
@@ -147,7 +148,7 @@ pub fn read_config(file_path: &PathBuf) -> Result<Config> {
     Ok(config)
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, JsonSchema)]
 #[serde(untagged)]
 pub enum Value {
     Integer(i64),
