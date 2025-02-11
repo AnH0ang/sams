@@ -28,5 +28,9 @@ pub fn run(
             shell.generate(&mut Args::command(), &mut std::io::stdout());
             Ok(ExitCode::SUCCESS)
         },
+        Commands::Init(args) => {
+            commands::init::init(args)?;
+            Ok(ExitCode::SUCCESS)
+        },
     }
 }

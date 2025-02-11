@@ -19,6 +19,9 @@ pub struct Args {
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
+    /// Initialize a new dotfile configuration
+    Init(InitArgs),
+
     /// Interactively ask for dotfile configurations
     Ask(AskArgs),
 
@@ -41,8 +44,17 @@ pub struct GlobalArgs {
 }
 
 #[derive(Clone, Debug, clap::Parser)]
+pub struct InitArgs {
+    #[arg(long, short, default_value = "sams.toml")]
+    pub file: PathBuf,
+
+    #[arg(long)]
+    pub force: bool,
+}
+
+#[derive(Clone, Debug, clap::Parser)]
 pub struct AskArgs {
-    #[arg(long, short)]
+    #[arg(long)]
     pub force: bool,
 }
 

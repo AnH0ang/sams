@@ -27,6 +27,18 @@ pub struct Config {
     pub parameters: Vec<Parameter>,
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            answer_file: default_answer_file(),
+            exclude: default_exclude(),
+            template_suffix: default_template_suffix(),
+            respect_gitignore: default_respect_gitignore(),
+            parameters: default_parameters(),
+        }
+    }
+}
+
 fn default_answer_file() -> PathBuf {
     PathBuf::from(".sams-answers.toml")
 }
