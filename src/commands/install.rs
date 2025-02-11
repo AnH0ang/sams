@@ -12,7 +12,6 @@ pub fn install(_args: InstallArgs, global_args: GlobalArgs) -> Result<()> {
     let cfg = read_config(&global_args.config_path)?;
 
     let pb = create_progress_bar(cfg.tasks.len() as u64);
-    pb.println("Running Tasks:\n--------------".bold().to_string());
 
     for (i, task) in cfg.tasks.iter().enumerate() {
         let task_name = task
