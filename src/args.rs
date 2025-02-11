@@ -45,6 +45,9 @@ pub struct GlobalArgs {
 
 #[derive(Clone, Debug, clap::Parser)]
 pub struct InitArgs {
+    #[arg(long)]
+    pub no_git: bool,
+
     #[arg(long, short, default_value = "sams.toml")]
     pub file: PathBuf,
 

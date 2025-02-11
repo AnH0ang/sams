@@ -17,9 +17,9 @@ pub fn render(args: RenderArgs, global_args: GlobalArgs) -> Result<()> {
     let context = TeraContext::from_serialize(answers)?;
     let overrides = default_overrides()?;
 
-    let root = args.path.as_deref().unwrap_or_else(|| Path::new("."));
+    let root_path = args.path.as_deref().unwrap_or(Path::new("."));
 
-    WalkBuilder::new(root)
+    WalkBuilder::new(root_path)
         .overrides(overrides)
         .standard_filters(true)
         .hidden(false)
@@ -34,7 +34,6 @@ pub fn render(args: RenderArgs, global_args: GlobalArgs) -> Result<()> {
 
 fn read_answers<P: AsRef<Path>>(answer_file: P) -> Result<Table> {
     let path = answer_file.as_ref();
-
     let content = fs::read_to_string(path)
         .with_context(|| format!("Failed to read answer file: {}", path.display()))?;
 
@@ -54,14 +53,14 @@ fn default_overrides() -> Result<Override> {
 }
 
 fn process_template(path: &Path, context: &TeraContext) -> Result<()> {
-    let template_str = fs::read_to_string(path)
+    let template_content = fs::read_to_string(path)
         .with_context(|| format!("Failed to read template: {}", path.display()))?;
 
-    let rendered = Tera::one_off(&template_str, context, true)
+    let rendered_output = Tera::one_off(&template_content, context, true)
         .with_context(|| format!("Failed to render template: {}", path.display()))?;
 
     let output_path = path.with_extension("");
-    fs::write(&output_path, rendered)
+    fs::write(&output_path, rendered_output)
         .with_context(|| format!("Failed to write output: {}", output_path.display()))?;
 
     Ok(())
@@ -77,64 +76,69 @@ mod tests {
 
     use super::*;
 
-    fn tmpdir() -> TempDir {
-        TempDir::new().unwrap()
+    fn create_temp_dir() -> TempDir {
+        TempDir::new().expect("Failed to create temp directory")
     }
 
-    fn wfile(path: PathBuf, contents: &str) {
-        let mut file = File::create(path).unwrap();
-        file.write_all(contents.as_bytes()).unwrap();
+    fn write_file(path: &PathBuf, contents: &str) {
+        let mut file = File::create(path).expect("Failed to create file");
+        file.write_all(contents.as_bytes())
+            .expect("Failed to write file");
     }
 
-    fn setup_config(config_file: PathBuf, answer_file: PathBuf, template_suffix: &str) {
-        wfile(
-            config_file,
+    fn setup_config(config_path: &PathBuf, answer_path: &Path, template_suffix: &str) {
+        write_file(
+            config_path,
             &format!(
                 r#"
                 template_suffix = "{}"
                 answer_file = "{}"
                 "#,
                 template_suffix,
-                answer_file.to_str().unwrap(),
+                answer_path.display(),
             ),
         );
     }
 
-    fn setup_answers(answer_file: PathBuf, answers: &str) {
-        wfile(answer_file, answers);
+    fn setup_answers(answer_path: &PathBuf, answers: &str) {
+        write_file(answer_path, answers);
     }
 
-    fn create_template(file: PathBuf, content: &str) {
-        wfile(file, content);
+    fn create_template(template_path: &PathBuf, content: &str) {
+        write_file(template_path, content);
     }
 
-    fn read_file(file: PathBuf) -> String {
-        fs::read_to_string(file).unwrap()
+    fn read_file_contents(file_path: &PathBuf) -> String {
+        fs::read_to_string(file_path).expect("Failed to read file")
     }
 
     #[test]
-    fn renders_template_with_suffix() {
-        let td = tmpdir();
+    fn test_render_template_with_suffix() {
+        let tmp_dir = create_temp_dir();
 
-        setup_config(
-            td.path().join("sams.toml"),
-            td.path().join(".answers.toml"),
-            "tera",
+        let config_path = tmp_dir.path().join("config.toml");
+        let answer_path = tmp_dir.path().join("answers.toml");
+        let template1_path = tmp_dir.path().join("test1.txt.tera");
+        let template2_path = tmp_dir.path().join("test2.txt");
+
+        setup_config(&config_path, &answer_path, "tera");
+        setup_answers(&answer_path, r#"key = "testvalue""#);
+        create_template(&template1_path, "key={{ key }}");
+        create_template(&template2_path, "key");
+
+        let args = RenderArgs {
+            path: Some(tmp_dir.path().to_path_buf()),
+        };
+        let global_args = GlobalArgs {
+            config_path: config_path.clone(),
+        };
+
+        render(args, global_args).expect("Render function failed");
+
+        assert_eq!(
+            read_file_contents(&tmp_dir.path().join("test1.txt")),
+            "key=testvalue"
         );
-        setup_answers(td.path().join(".answers.toml"), r#"key = "testvalue""#);
-        create_template(td.path().join("test1.txt.tera"), "key={{ key }}");
-        create_template(td.path().join("test2.txt"), "key");
-
-        let args = super::RenderArgs {
-            path: Some(td.path().to_path_buf()),
-        };
-        let global_args = super::GlobalArgs {
-            config_path: td.path().join("sams.toml"),
-        };
-
-        render(args, global_args).unwrap();
-
-        assert_eq!(read_file(td.path().join("test1.txt")), "key=testvalue");
-        assert_eq!(read_file(td.path().join("test2.txt")), "key");
+        assert_eq!(read_file_contents(&tmp_dir.path().join("test2.txt")), "key");
     }
 }
