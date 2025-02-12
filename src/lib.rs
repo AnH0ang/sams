@@ -8,6 +8,8 @@ use crate::args::{Args, Commands};
 pub mod args;
 pub mod commands;
 pub mod config;
+pub mod context;
+pub mod template;
 
 pub fn run(
     Args {
