@@ -26,6 +26,10 @@ pub fn run(
             commands::render::render(args, global_args)?;
             Ok(ExitCode::SUCCESS)
         },
+        Commands::Link(args) => {
+            commands::link::link(args)?;
+            Ok(ExitCode::SUCCESS)
+        },
         Commands::Completions { shell } => {
             shell.generate(&mut Args::command(), &mut std::io::stdout());
             Ok(ExitCode::SUCCESS)

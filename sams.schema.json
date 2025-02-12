@@ -17,6 +17,11 @@
         "type": "string"
       }
     },
+    "link_suffix": {
+      "description": "The suffix of the template files",
+      "default": "ln",
+      "type": "string"
+    },
     "parameters": {
       "description": "The list of parameters to ask the user",
       "default": [],

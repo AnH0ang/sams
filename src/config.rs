@@ -23,6 +23,10 @@ pub struct Config {
     #[serde(default = "default_template_suffix")]
     pub template_suffix: String,
 
+    /// The suffix of the template files
+    #[serde(default = "default_link_suffix")]
+    pub link_suffix: String,
+
     /// Whether to respect the `.gitignore` file when copying the template
     #[serde(default = "default_respect_gitignore")]
     pub respect_gitignore: bool,
@@ -42,6 +46,7 @@ impl Default for Config {
             answer_file: default_answer_file(),
             exclude: default_exclude(),
             template_suffix: default_template_suffix(),
+            link_suffix: default_link_suffix(),
             respect_gitignore: default_respect_gitignore(),
             parameters: default_parameters(),
             tasks: default_tasks(),
@@ -59,6 +64,10 @@ fn default_exclude() -> Vec<String> {
 
 fn default_template_suffix() -> String {
     "tpl".to_string()
+}
+
+fn default_link_suffix() -> String {
+    "ln".to_string()
 }
 
 fn default_respect_gitignore() -> bool {
@@ -181,6 +190,7 @@ mod tests {
             answer_file: PathBuf::from(".answers.toml"),
             exclude: vec![],
             template_suffix: "tpl".to_string(),
+            link_suffix: "ln".to_string(),
             respect_gitignore: true,
             parameters: vec![
                 Parameter::Select {
@@ -204,6 +214,7 @@ mod tests {
 answer_file = ".answers.toml"
 exclude = []
 template_suffix = "tpl"
+link_suffix = "ln"
 respect_gitignore = true
 tasks = []
 

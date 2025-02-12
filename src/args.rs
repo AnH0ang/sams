@@ -28,6 +28,9 @@ pub enum Commands {
     /// Render dotfile templates
     Render(RenderArgs),
 
+    /// Link files
+    Link(LinkArgs),
+
     /// Run install scripts
     Install(InstallArgs),
 
@@ -80,6 +83,9 @@ pub struct RenderArgs {
     /// Path to the template files
     pub path: Option<PathBuf>,
 }
+
+#[derive(Clone, Debug, clap::Parser)]
+pub struct LinkArgs {}
 
 #[derive(Clone, Debug, clap::Parser)]
 pub struct InstallArgs {}
