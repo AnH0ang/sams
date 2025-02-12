@@ -6,7 +6,7 @@ use inquire::{Select, Text};
 use toml;
 
 use crate::args::{AskArgs, GlobalArgs};
-use crate::config::{read_config, DataType, Parameter, Value};
+use crate::config::{Config, DataType, Parameter, Value};
 
 fn parse_input(input: &str, data_type: DataType) -> Result<Value> {
     match data_type {
@@ -23,7 +23,7 @@ fn parse_input(input: &str, data_type: DataType) -> Result<Value> {
 }
 
 pub fn ask(_args: AskArgs, global_args: GlobalArgs) -> Result<()> {
-    let cfg = read_config(&global_args.config_path)?;
+    let cfg = Config::from_file(&global_args.config_path)?;
 
     // Ask the user for each parameter and store the answers.
     let mut answers: HashMap<String, Value> = HashMap::new();

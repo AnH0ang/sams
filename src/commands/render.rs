@@ -6,18 +6,17 @@ use ignore::overrides::{Override, OverrideBuilder};
 use ignore::WalkBuilder;
 
 use crate::args::{GlobalArgs, RenderArgs};
-use crate::config::read_config;
+use crate::config::Config;
 use crate::context::read_context;
 use crate::template::render_template;
 
 pub fn render(args: RenderArgs, global: GlobalArgs) -> Result<()> {
-    let cfg = read_config(&global.config_path)?;
+    let cfg = Config::from_file(&global.config_path)?;
     let ctx = read_context(cfg.answer_file)?;
 
     let overrides = build_overrides(cfg.exclude)?;
-    let root = args.path.as_deref().unwrap_or_else(|| Path::new("."));
 
-    WalkBuilder::new(root)
+    WalkBuilder::new(args.path)
         .overrides(overrides)
         .standard_filters(true)
         .hidden(false)
@@ -126,7 +125,7 @@ mod tests {
 
         // Run render function
         let args = RenderArgs {
-            path: Some(tmp_path.to_path_buf()),
+            path: tmp_path.to_path_buf(),
         };
         let global_args = GlobalArgs {
             config_path: config_path.clone(),
@@ -158,7 +157,7 @@ mod tests {
         // Test missing answer file
         setup_config(&config_path, &answer_path, "tera", vec![]);
         let args = RenderArgs {
-            path: Some(tmp_path.to_path_buf()),
+            path: tmp_path.to_path_buf(),
         };
         let global_args = GlobalArgs {
             config_path: config_path.clone(),
@@ -169,7 +168,7 @@ mod tests {
         // Test invalid TOML
         setup_answers(&answer_path, "invalid = toml here");
         let args = RenderArgs {
-            path: Some(tmp_path.to_path_buf()),
+            path: tmp_path.to_path_buf(),
         };
         let global_args = GlobalArgs {
             config_path: config_path.clone(),
@@ -181,7 +180,7 @@ mod tests {
         setup_answers(&answer_path, r#"key = "value""#);
         create_template(&invalid_template_path, "{{ invalid syntax }}");
         let args = RenderArgs {
-            path: Some(tmp_path.to_path_buf()),
+            path: tmp_path.to_path_buf(),
         };
         let global_args = GlobalArgs { config_path };
         let result = render(args, global_args);

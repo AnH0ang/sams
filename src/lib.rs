@@ -27,7 +27,7 @@ pub fn run(
             Ok(ExitCode::SUCCESS)
         },
         Commands::Link(args) => {
-            commands::link::link(args)?;
+            commands::link::link(args, global_args)?;
             Ok(ExitCode::SUCCESS)
         },
         Commands::Completions { shell } => {

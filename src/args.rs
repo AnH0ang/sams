@@ -81,11 +81,16 @@ pub struct AskArgs {
 #[derive(Clone, Debug, clap::Parser)]
 pub struct RenderArgs {
     /// Path to the template files
-    pub path: Option<PathBuf>,
+    #[arg(long, short, default_value = ".")]
+    pub path: PathBuf,
 }
 
 #[derive(Clone, Debug, clap::Parser)]
-pub struct LinkArgs {}
+pub struct LinkArgs {
+    /// Path to the link files
+    #[arg(long, short, default_value = ".")]
+    pub path: PathBuf,
+}
 
 #[derive(Clone, Debug, clap::Parser)]
 pub struct InstallArgs {}

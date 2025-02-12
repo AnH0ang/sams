@@ -7,10 +7,10 @@ use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 
 use crate::args::{GlobalArgs, InstallArgs};
-use crate::config::{read_config, Task};
+use crate::config::{Config, Task};
 
 pub fn install(_args: InstallArgs, global: GlobalArgs) -> Result<()> {
-    let cfg = read_config(&global.config_path)?;
+    let cfg = Config::from_file(&global.config_path)?;
     let pb = progress_bar(cfg.tasks.len() as u64);
 
     for (idx, task) in cfg.tasks.iter().enumerate() {

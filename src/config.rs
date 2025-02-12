@@ -146,18 +146,20 @@ pub enum DataType {
     Str,
 }
 
-pub fn read_config(file_path: &PathBuf) -> Result<Config> {
-    let mut file = File::open(file_path)
-        .with_context(|| format!("Failed to open config file at '{}'", file_path.display()))?;
+impl Config {
+    pub fn from_file(file_path: &PathBuf) -> Result<Self> {
+        let mut file = File::open(file_path)
+            .with_context(|| format!("Failed to open config file at '{}'", file_path.display()))?;
 
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)
-        .with_context(|| format!("Failed to read config file at '{}'", file_path.display()))?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)
+            .with_context(|| format!("Failed to read config file at '{}'", file_path.display()))?;
 
-    let config: Config = toml::from_str(&contents)
-        .with_context(|| format!("Failed to parse config file at '{}'", file_path.display()))?;
+        let config: Self = toml::from_str(&contents)
+            .with_context(|| format!("Failed to parse config file at '{}'", file_path.display()))?;
 
-    Ok(config)
+        Ok(config)
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, JsonSchema)]
