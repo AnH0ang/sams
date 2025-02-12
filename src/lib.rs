@@ -10,6 +10,7 @@ pub mod commands;
 pub mod config;
 pub mod context;
 pub mod template;
+pub mod walk;
 
 pub fn run(
     Args {

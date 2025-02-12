@@ -1,54 +1,37 @@
-use std::ffi::OsStr;
-use std::path::Path;
-
 use anyhow::{Context, Result};
-use ignore::overrides::{Override, OverrideBuilder};
-use ignore::WalkBuilder;
 
 use crate::args::{GlobalArgs, RenderArgs};
 use crate::config::Config;
 use crate::context::read_context;
 use crate::template::render_template;
+use crate::walk::WalkOptions;
 
 pub fn render(args: RenderArgs, global: GlobalArgs) -> Result<()> {
     let cfg = Config::from_file(&global.config_path)?;
     let ctx = read_context(cfg.answer_file)?;
 
-    let overrides = build_overrides(cfg.exclude)?;
-
-    WalkBuilder::new(args.path)
-        .overrides(overrides)
-        .standard_filters(true)
-        .hidden(false)
-        .build()
-        .filter_map(|entry| entry.context("Failed to read directory entry").ok())
-        .filter(|entry| entry.file_type().is_some_and(|ft| ft.is_file()))
-        .filter(|entry| has_template_suffix(entry.path(), &cfg.template_suffix))
-        .try_for_each(|entry| {
-            let output_path = entry.path().with_extension("");
-            render_template(entry.path(), &output_path, &ctx)
-        })?;
+    WalkOptions {
+        filter_extension: Some(cfg.template_suffix.clone()),
+        excludes: cfg.exclude,
+        ignore_hidden: true,
+        respect_gitignore: cfg.respect_gitignore,
+    }
+    .walk(&args.path)?
+    .skip(1) // Skip the root directory
+    .filter_map(|entry| entry.context("Failed to read directory entry").ok())
+    .try_for_each(|entry| {
+        println!("Rendering {}", entry.path().display());
+        render_template(entry.path(), &entry.path().with_extension(""), &ctx)
+    })?;
 
     Ok(())
-}
-
-fn has_template_suffix(path: &Path, suffix: &str) -> bool {
-    path.extension().and_then(OsStr::to_str) == Some(suffix)
-}
-
-fn build_overrides(excludes: Vec<String>) -> Result<Override> {
-    let mut builder = OverrideBuilder::new(".");
-    builder.add("!.git/")?;
-    for exclude in excludes {
-        builder.add(&format!("!{}", exclude))?;
-    }
-    builder.build().context("Failed to build ignore overrides")
 }
 
 #[cfg(test)]
 mod tests {
     use std::fs::{self, File};
     use std::io::Write;
+    use std::path::Path;
 
     use tempfile::TempDir;
 
