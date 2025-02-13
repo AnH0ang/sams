@@ -28,22 +28,22 @@ pub enum Commands {
     /// Clone a dotfile configuration
     Clone(CloneArgs),
 
-    /// Interactively ask for dotfile configurations
+    /// [Plumbing] Interactively ask for dotfile configurations
     Ask(AskArgs),
 
-    /// Render dotfile templates
+    /// [Plumbing] Render dotfile templates
     Render,
 
-    /// Link files
+    /// [Plumbing] Link files
     Link,
 
-    /// Run install scripts
+    /// [Plumbing] Run install scripts
     Install,
 
-    /// Pull
+    /// [Plumbing] Pull
     Pull,
 
-    /// Generate shell completions
+    /// [Plumbing] Generate shell completions
     Completions {
         /// The shell to generate the completions for
         #[arg(value_enum)]
