@@ -8,21 +8,16 @@ use crate::walk::WalkOptions;
 
 pub fn render(args: RenderArgs, global: GlobalArgs) -> Result<()> {
     let cfg = Config::from_file(&global.config_path)?;
-    let ctx = read_context(cfg.answer_file)?;
+    let ctx = read_context(&cfg.answer_file)?;
 
-    WalkOptions {
-        filter_extension: Some(cfg.template_suffix.clone()),
-        excludes: cfg.exclude,
-        ignore_hidden: true,
-        respect_gitignore: cfg.respect_gitignore,
-    }
-    .walk(&args.path)?
-    .skip(1) // Skip the root directory
-    .filter_map(|entry| entry.context("Failed to read directory entry").ok())
-    .try_for_each(|entry| {
-        println!("Rendering {}", entry.path().display());
-        render_template(entry.path(), &entry.path().with_extension(""), &ctx)
-    })?;
+    WalkOptions::from_config(&cfg)
+        .walk(&args.path)?
+        .skip(1) // Skip the root directory
+        .filter_map(|entry| entry.context("Failed to read directory entry").ok())
+        .try_for_each(|entry| {
+            println!("Rendering {}", entry.path().display());
+            render_template(entry.path(), &entry.path().with_extension(""), &ctx)
+        })?;
 
     Ok(())
 }

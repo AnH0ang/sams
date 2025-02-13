@@ -4,6 +4,8 @@ use anyhow::Result;
 use ignore::overrides::{Override, OverrideBuilder};
 use ignore::{Walk, WalkBuilder};
 
+use crate::config::Config;
+
 pub struct WalkOptions {
     /// Filter files by extension
     pub filter_extension: Option<String>,
@@ -30,6 +32,15 @@ impl Default for WalkOptions {
 }
 
 impl WalkOptions {
+    pub fn from_config(cfg: &Config) -> Self {
+        Self {
+            filter_extension: Some(cfg.template_suffix.clone()),
+            excludes: cfg.exclude.clone(),
+            ignore_hidden: true,
+            respect_gitignore: cfg.respect_gitignore,
+        }
+    }
+
     pub fn walk(self, root: &Path) -> Result<Walk> {
         let mut builder = WalkBuilder::new(root);
 
