@@ -11,10 +11,14 @@ pub fn render(args: RenderArgs, global: GlobalArgs) -> Result<()> {
     let cfg = Config::from_file(&global.config_path)?;
     let ctx = read_context(&cfg.answer_file)?;
 
-    WalkOptions::from_config(&cfg)
+    let walker = WalkOptions::from_config(&cfg)
         .with_extension(cfg.template_suffix)
-        .walk(&args.path)?
-        .skip(1) // Skip the root directory
+        .walk(&args.path)
+        .context("Failed to walk directory")?;
+
+    // Skip the root entry and render each subsequent entry.
+    walker
+        .skip(1)
         .filter_map(|entry| entry.context("Failed to read directory entry").ok())
         .try_for_each(|entry| {
             println!(
