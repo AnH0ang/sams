@@ -1,12 +1,12 @@
 use anyhow::Result;
 
-use crate::args::{AskArgs, GlobalArgs, SyncArgs};
+use crate::args::{AskArgs, GlobalArgs};
 use crate::commands::ask::ask;
 use crate::commands::install::install;
 use crate::commands::link::link;
 use crate::commands::render::render;
 
-pub fn sync(_args: SyncArgs, global: &GlobalArgs) -> Result<()> {
+pub fn sync(global: &GlobalArgs) -> Result<()> {
     // Ask
     let args = AskArgs { force: false };
     ask(args, global)?;

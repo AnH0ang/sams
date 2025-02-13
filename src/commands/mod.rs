@@ -1,4 +1,5 @@
 pub mod ask;
+pub mod clone;
 pub mod generate_json_schema;
 pub mod init;
 pub mod install;

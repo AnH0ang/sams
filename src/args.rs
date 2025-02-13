@@ -11,7 +11,7 @@ use clap::{Parser, Subcommand};
 )]
 pub struct Args {
     #[clap(flatten)]
-    pub global_args: GlobalArgs,
+    pub global: GlobalArgs,
 
     #[command(subcommand)]
     pub command: Commands,
@@ -20,10 +20,13 @@ pub struct Args {
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     /// Sync dotfiles
-    Sync(SyncArgs),
+    Sync,
 
     /// Initialize a new dotfile configuration
     Init(InitArgs),
+
+    /// Clone a dotfile configuration
+    Clone(CloneArgs),
 
     /// Interactively ask for dotfile configurations
     Ask(AskArgs),
@@ -63,7 +66,14 @@ pub struct GlobalArgs {
 }
 
 #[derive(Clone, Debug, clap::Parser)]
-pub struct SyncArgs {}
+pub struct CloneArgs {
+    // Git repository URL
+    pub url: String,
+
+    // destination directory
+    #[clap(short, long, default_value = "~/.config")]
+    pub dest: PathBuf,
+}
 
 #[derive(Clone, Debug, clap::Parser)]
 pub struct InitArgs {
