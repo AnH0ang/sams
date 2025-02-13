@@ -31,10 +31,15 @@ impl Default for WalkOptions {
 
 impl WalkOptions {
     pub fn walk(self, root: &Path) -> Result<Walk> {
-        let overrides = self.build_glob()?;
-        let mut builder = self.walk_builder(root);
+        let mut builder = WalkBuilder::new(root);
+
+        builder.standard_filters(self.respect_gitignore);
+        builder.hidden(self.ignore_hidden);
         builder.filter_entry(|entry| entry.file_type().is_some_and(|ft| ft.is_file()));
+
+        let overrides = self.build_glob()?;
         builder.overrides(overrides);
+
         if let Some(ext) = self.filter_extension {
             builder.filter_entry(move |entry| {
                 entry
@@ -46,13 +51,6 @@ impl WalkOptions {
         };
 
         Ok(builder.build())
-    }
-
-    fn walk_builder(&self, root: &Path) -> WalkBuilder {
-        let mut builder = WalkBuilder::new(root);
-        builder.standard_filters(self.respect_gitignore);
-        builder.hidden(self.ignore_hidden);
-        builder
     }
 
     fn build_glob(&self) -> Result<Override> {
