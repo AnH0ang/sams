@@ -2,7 +2,7 @@ use std::process::Command;
 
 use anyhow::Result;
 
-use crate::args::{CloneArgs, GlobalArgs};
+use crate::args::{CloneArgs, GlobalArgs, SyncArgs};
 use crate::commands::sync::sync;
 
 pub fn clone(args: CloneArgs, global: GlobalArgs) -> Result<()> {
@@ -15,11 +15,13 @@ pub fn clone(args: CloneArgs, global: GlobalArgs) -> Result<()> {
         .wait()?;
 
     // Sync
-    let global = GlobalArgs {
-        root: args.dest.clone(),
-        ..global
-    };
-    sync(&global)?;
+    sync(
+        SyncArgs { ask: true },
+        &GlobalArgs {
+            root: args.dest.clone(),
+            ..global
+        },
+    )?;
 
     Ok(())
 }

@@ -20,7 +20,7 @@ pub struct Args {
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     /// Sync dotfiles
-    Sync,
+    Sync(SyncArgs),
 
     /// Initialize a new dotfile configuration
     Init(InitArgs),
@@ -28,22 +28,22 @@ pub enum Commands {
     /// Clone a dotfile configuration
     Clone(CloneArgs),
 
-    /// [Plumbing] Interactively ask for dotfile configurations
+    /// (Plumbing) Interactively ask for dotfile configurations
     Ask(AskArgs),
 
-    /// [Plumbing] Render dotfile templates
+    /// (Plumbing) Render dotfile templates
     Render,
 
-    /// [Plumbing] Link files
+    /// (Plumbing) Link files
     Link,
 
-    /// [Plumbing] Run install scripts
+    /// (Plumbing) Run install scripts
     Install,
 
-    /// [Plumbing] Pull
+    /// (Plumbing) Pull
     Pull,
 
-    /// [Plumbing] Generate shell completions
+    /// (Plumbing) Generate shell completions
     Completions {
         /// The shell to generate the completions for
         #[arg(value_enum)]
@@ -64,6 +64,13 @@ pub struct GlobalArgs {
     /// Root directory
     #[clap(short, long, default_value = ".")]
     pub root: PathBuf,
+}
+
+#[derive(Clone, Debug, clap::Parser)]
+pub struct SyncArgs {
+    // Overwrite existing answers file
+    #[clap(long)]
+    pub ask: bool,
 }
 
 #[derive(Clone, Debug, clap::Parser)]

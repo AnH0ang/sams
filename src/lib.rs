@@ -14,8 +14,8 @@ pub mod walk;
 
 pub fn run(Args { global, command }: Args) -> Result<ExitCode> {
     match command {
-        Commands::Sync => {
-            commands::sync::sync(&global)?;
+        Commands::Sync(args) => {
+            commands::sync::sync(args, &global)?;
             Ok(ExitCode::SUCCESS)
         },
         Commands::Init(args) => {
