@@ -8,8 +8,12 @@ use toml;
 use crate::args::{AskArgs, GlobalArgs};
 use crate::config::{Config, DataType, Parameter, Value};
 
-pub fn ask(_args: AskArgs, global: &GlobalArgs) -> Result<()> {
+pub fn ask(args: AskArgs, global: &GlobalArgs) -> Result<()> {
     let cfg = Config::from_file(&global.config_path)?;
+
+    if !args.force && cfg.answer_file.exists() {
+        return Ok(());
+    }
 
     // Ask the user for each parameter and store the answers.
     let mut answers: HashMap<String, Value> = HashMap::new();

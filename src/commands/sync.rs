@@ -10,7 +10,7 @@ use crate::commands::render::render;
 
 pub fn sync(_args: SyncArgs, global: &GlobalArgs) -> Result<()> {
     // Ask
-    let args = AskArgs { force: true };
+    let args = AskArgs { force: false };
     ask(args, global)?;
 
     // Link link
