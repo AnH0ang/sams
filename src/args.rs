@@ -37,6 +37,9 @@ pub enum Commands {
     /// Run install scripts
     Install,
 
+    /// Pull
+    Pull,
+
     /// Generate shell completions
     Completions {
         /// The shell to generate the completions for

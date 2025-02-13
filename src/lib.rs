@@ -47,6 +47,10 @@ pub fn run(
             commands::install::install(&global_args)?;
             Ok(ExitCode::SUCCESS)
         },
+        Commands::Pull => {
+            commands::pull::pull(&global_args)?;
+            Ok(ExitCode::SUCCESS)
+        },
         Commands::GenerateJsonSchema(args) => {
             commands::generate_json_schema::generate_json_schema(args)?;
             Ok(ExitCode::SUCCESS)
