@@ -51,6 +51,7 @@ pub enum Commands {
     },
 
     /// Generate json schema for `sams.toml` config file
+    #[command(hide = true)]
     GenerateJsonSchema(GenerateJsonSchemaArgs),
 }
 
