@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use colored::Colorize;
 
 use crate::args::{GlobalArgs, RenderArgs};
 use crate::config::Config;
@@ -15,7 +16,12 @@ pub fn render(args: RenderArgs, global: GlobalArgs) -> Result<()> {
         .skip(1) // Skip the root directory
         .filter_map(|entry| entry.context("Failed to read directory entry").ok())
         .try_for_each(|entry| {
-            println!("Rendering {}", entry.path().display());
+            println!(
+                "{} {} -> {}",
+                "Rendering".green().bold(),
+                entry.path().display(),
+                entry.path().with_extension("").display()
+            );
             render_template(entry.path(), &entry.path().with_extension(""), &ctx)
         })?;
 
