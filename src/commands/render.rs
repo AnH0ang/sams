@@ -12,6 +12,7 @@ pub fn render(args: RenderArgs, global: GlobalArgs) -> Result<()> {
     let ctx = read_context(&cfg.answer_file)?;
 
     WalkOptions::from_config(&cfg)
+        .with_extension(cfg.template_suffix)
         .walk(&args.path)?
         .skip(1) // Skip the root directory
         .filter_map(|entry| entry.context("Failed to read directory entry").ok())

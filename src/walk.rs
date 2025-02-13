@@ -34,11 +34,16 @@ impl Default for WalkOptions {
 impl WalkOptions {
     pub fn from_config(cfg: &Config) -> Self {
         Self {
-            filter_extension: Some(cfg.template_suffix.clone()),
+            filter_extension: None,
             excludes: cfg.exclude.clone(),
             ignore_hidden: true,
             respect_gitignore: cfg.respect_gitignore,
         }
+    }
+
+    pub fn with_extension(mut self, extension: String) -> Self {
+        self.filter_extension = Some(extension);
+        self
     }
 
     pub fn walk(self, root: &Path) -> Result<Walk> {
