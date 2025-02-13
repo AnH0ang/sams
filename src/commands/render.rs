@@ -23,7 +23,7 @@ pub fn render(args: RenderArgs, global: GlobalArgs) -> Result<()> {
         .try_for_each(|entry| {
             println!(
                 "{} {} -> {}",
-                "Rendering".green().bold(),
+                "✓   Render".green().bold(),
                 entry.path().display(),
                 entry.path().with_extension("").display()
             );

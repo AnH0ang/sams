@@ -26,22 +26,20 @@ pub fn install(_args: InstallArgs, global: GlobalArgs) -> Result<()> {
         pb.inc(1);
         pb.println(format!(
             "{} {:>8} {} ({}/{})",
-            "✓".green(),
+            "✓".green().bold(),
             "Finished".green().bold(),
             name.bold(),
             idx + 1,
             cfg.tasks.len()
         ));
     }
-
     pb.finish_and_clear();
-    println!("{}", "\nAll tasks completed successfully.".green().bold());
     Ok(())
 }
 
 fn progress_bar(len: u64) -> ProgressBar {
     let pb = ProgressBar::new(len).with_style(
-        ProgressStyle::with_template("{spinner:.cyan} {prefix} ({pos}/{len}) {msg}")
+        ProgressStyle::with_template("{spinner:.cyan.bold} {prefix} ({pos}/{len}) {msg}")
             .unwrap()
             .progress_chars("#>-")
             .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),

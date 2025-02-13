@@ -43,7 +43,7 @@ fn process_entry(entry: &DirEntry, ctx: &tera::Context) -> Result<()> {
 
     println!(
         "{} {} -> {}",
-        "Linking".bold().green(),
+        "✓  Linking".bold().green(),
         src.display(),
         dst.display()
     );
