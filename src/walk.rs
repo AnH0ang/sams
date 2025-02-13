@@ -37,7 +37,7 @@ impl WalkOptions {
         builder.hidden(self.ignore_hidden);
         builder.filter_entry(|entry| entry.file_type().is_some_and(|ft| ft.is_file()));
 
-        let overrides = self.build_glob()?;
+        let overrides = self.build_glob(root)?;
         builder.overrides(overrides);
 
         if let Some(ext) = self.filter_extension {
@@ -53,8 +53,8 @@ impl WalkOptions {
         Ok(builder.build())
     }
 
-    fn build_glob(&self) -> Result<Override> {
-        let mut builder = OverrideBuilder::new(".");
+    fn build_glob(&self, root: &Path) -> Result<Override> {
+        let mut builder = OverrideBuilder::new(root);
         builder.add("!.git/")?;
         for glob in &self.excludes {
             builder.add(&format!("!{}", glob))?;
