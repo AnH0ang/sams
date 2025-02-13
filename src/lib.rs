@@ -19,28 +19,32 @@ pub fn run(
     }: Args,
 ) -> Result<ExitCode> {
     match command {
-        Commands::Ask(arg) => {
-            commands::ask::ask(arg, global_args)?;
-            Ok(ExitCode::SUCCESS)
-        },
-        Commands::Render(args) => {
-            commands::render::render(args, global_args)?;
-            Ok(ExitCode::SUCCESS)
-        },
-        Commands::Link(args) => {
-            commands::link::link(args, global_args)?;
-            Ok(ExitCode::SUCCESS)
-        },
-        Commands::Completions { shell } => {
-            shell.generate(&mut Args::command(), &mut std::io::stdout());
+        Commands::Sync(args) => {
+            commands::sync::sync(args, &global_args)?;
             Ok(ExitCode::SUCCESS)
         },
         Commands::Init(args) => {
             commands::init::init(args)?;
             Ok(ExitCode::SUCCESS)
         },
+        Commands::Ask(arg) => {
+            commands::ask::ask(arg, &global_args)?;
+            Ok(ExitCode::SUCCESS)
+        },
+        Commands::Render(args) => {
+            commands::render::render(args, &global_args)?;
+            Ok(ExitCode::SUCCESS)
+        },
+        Commands::Link(args) => {
+            commands::link::link(args, &global_args)?;
+            Ok(ExitCode::SUCCESS)
+        },
+        Commands::Completions { shell } => {
+            shell.generate(&mut Args::command(), &mut std::io::stdout());
+            Ok(ExitCode::SUCCESS)
+        },
         Commands::Install(args) => {
-            commands::install::install(args, global_args)?;
+            commands::install::install(args, &global_args)?;
             Ok(ExitCode::SUCCESS)
         },
         Commands::GenerateJsonSchema(args) => {

@@ -19,6 +19,9 @@ pub struct Args {
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
+    /// Sync dotfiles
+    Sync(SyncArgs),
+
     /// Initialize a new dotfile configuration
     Init(InitArgs),
 
@@ -51,6 +54,9 @@ pub struct GlobalArgs {
     #[clap(short, long = "config", default_value = "sams.toml")]
     pub config_path: PathBuf,
 }
+
+#[derive(Clone, Debug, clap::Parser)]
+pub struct SyncArgs {}
 
 #[derive(Clone, Debug, clap::Parser)]
 pub struct InitArgs {

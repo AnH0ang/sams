@@ -12,7 +12,7 @@ use crate::context::read_context;
 use crate::template::render_template_str;
 use crate::walk::WalkOptions;
 
-pub fn link(args: LinkArgs, global: GlobalArgs) -> Result<()> {
+pub fn link(args: LinkArgs, global: &GlobalArgs) -> Result<()> {
     let cfg = Config::from_file(&global.config_path).context("Failed to load configuration")?;
     let ctx = read_context(&cfg.answer_file).context("Failed to read context file")?;
 

@@ -8,22 +8,8 @@ use toml;
 use crate::args::{AskArgs, GlobalArgs};
 use crate::config::{Config, DataType, Parameter, Value};
 
-fn parse_input(input: &str, data_type: DataType) -> Result<Value> {
-    match data_type {
-        DataType::Float => input
-            .parse::<f64>()
-            .map(Value::Float)
-            .with_context(|| format!("Failed to parse '{input}' as float")),
-        DataType::Int => input
-            .parse::<i64>()
-            .map(Value::Integer)
-            .with_context(|| format!("Failed to parse '{input}' as integer")),
-        DataType::Str => Ok(Value::String(input.into())),
-    }
-}
-
-pub fn ask(_args: AskArgs, global_args: GlobalArgs) -> Result<()> {
-    let cfg = Config::from_file(&global_args.config_path)?;
+pub fn ask(_args: AskArgs, global: &GlobalArgs) -> Result<()> {
+    let cfg = Config::from_file(&global.config_path)?;
 
     // Ask the user for each parameter and store the answers.
     let mut answers: HashMap<String, Value> = HashMap::new();
@@ -73,6 +59,20 @@ pub fn ask(_args: AskArgs, global_args: GlobalArgs) -> Result<()> {
         .with_context(|| format!("Failed to write answers to file: {:?}", cfg.answer_file))?;
 
     Ok(())
+}
+
+fn parse_input(input: &str, data_type: DataType) -> Result<Value> {
+    match data_type {
+        DataType::Float => input
+            .parse::<f64>()
+            .map(Value::Float)
+            .with_context(|| format!("Failed to parse '{input}' as float")),
+        DataType::Int => input
+            .parse::<i64>()
+            .map(Value::Integer)
+            .with_context(|| format!("Failed to parse '{input}' as integer")),
+        DataType::Str => Ok(Value::String(input.into())),
+    }
 }
 
 #[cfg(test)]

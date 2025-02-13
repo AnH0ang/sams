@@ -9,7 +9,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use crate::args::{GlobalArgs, InstallArgs};
 use crate::config::{Config, Task};
 
-pub fn install(_args: InstallArgs, global: GlobalArgs) -> Result<()> {
+pub fn install(_args: InstallArgs, global: &GlobalArgs) -> Result<()> {
     let cfg = Config::from_file(&global.config_path)?;
     let pb = progress_bar(cfg.tasks.len() as u64);
 

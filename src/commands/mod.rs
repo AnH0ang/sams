@@ -4,3 +4,4 @@ pub mod init;
 pub mod install;
 pub mod link;
 pub mod render;
+pub mod sync;

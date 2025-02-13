@@ -7,7 +7,7 @@ use crate::context::read_context;
 use crate::template::render_template;
 use crate::walk::WalkOptions;
 
-pub fn render(args: RenderArgs, global: GlobalArgs) -> Result<()> {
+pub fn render(args: RenderArgs, global: &GlobalArgs) -> Result<()> {
     let cfg = Config::from_file(&global.config_path)?;
     let ctx = read_context(&cfg.answer_file)?;
 
@@ -119,7 +119,7 @@ mod tests {
         let global_args = GlobalArgs {
             config_path: config_path.clone(),
         };
-        render(args, global_args).expect("Render function failed");
+        render(args, &global_args).expect("Render function failed");
 
         // Assertions
         assert_eq!(
@@ -151,7 +151,7 @@ mod tests {
         let global_args = GlobalArgs {
             config_path: config_path.clone(),
         };
-        let result = render(args, global_args);
+        let result = render(args, &global_args);
         assert!(result.is_err(), "Should error on missing answer file");
 
         // Test invalid TOML
@@ -162,7 +162,7 @@ mod tests {
         let global_args = GlobalArgs {
             config_path: config_path.clone(),
         };
-        let result = render(args, global_args);
+        let result = render(args, &global_args);
         assert!(result.is_err(), "Should error on invalid TOML");
 
         // Test invalid template syntax
@@ -172,7 +172,7 @@ mod tests {
             path: tmp_path.to_path_buf(),
         };
         let global_args = GlobalArgs { config_path };
-        let result = render(args, global_args);
+        let result = render(args, &global_args);
         assert!(result.is_err(), "Should error on invalid template syntax");
     }
 }
