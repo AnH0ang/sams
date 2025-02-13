@@ -51,15 +51,9 @@ fn progress_bar(len: u64) -> ProgressBar {
 }
 
 fn run_task(task: &Task, pb: &ProgressBar, root: &Path) -> Result<()> {
-    let workdir = if task.workdir.is_absolute() {
-        task.workdir.clone()
-    } else {
-        root.join(&task.workdir)
-    };
-
     let mut cmd = Command::new(&task.shell)
         .arg(task.script.as_os_str())
-        .current_dir(&workdir)
+        .current_dir(root.join(&task.workdir))
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
