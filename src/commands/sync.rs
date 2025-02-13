@@ -26,7 +26,9 @@ pub fn sync(_args: SyncArgs, global: &GlobalArgs) -> Result<()> {
     render(args, global)?;
 
     // Install
-    let args = InstallArgs {};
+    let args = InstallArgs {
+        path: PathBuf::from("."),
+    };
     install(args, global)?;
 
     Ok(())

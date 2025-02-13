@@ -1,4 +1,5 @@
 use std::io::{BufRead, BufReader};
+use std::path::Path;
 use std::process::{Command, Stdio};
 use std::time::Duration;
 
@@ -9,7 +10,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use crate::args::{GlobalArgs, InstallArgs};
 use crate::config::{Config, Task};
 
-pub fn install(_args: InstallArgs, global: &GlobalArgs) -> Result<()> {
+pub fn install(args: InstallArgs, global: &GlobalArgs) -> Result<()> {
     let cfg = Config::from_file(&global.config_path)?;
     let pb = progress_bar(cfg.tasks.len() as u64);
 
@@ -20,7 +21,8 @@ pub fn install(_args: InstallArgs, global: &GlobalArgs) -> Result<()> {
             .unwrap_or_else(|| task.script.to_str().unwrap());
         pb.set_prefix(format!("{:>8} {}", "Running".yellow().bold(), name.bold()));
 
-        run_task(task, &pb).with_context(|| format!("Failed to execute task: {}", name))?;
+        run_task(task, &pb, &args.path)
+            .with_context(|| format!("Failed to execute task: {}", name))?;
 
         pb.set_message("");
         pb.inc(1);
@@ -48,10 +50,16 @@ fn progress_bar(len: u64) -> ProgressBar {
     pb
 }
 
-fn run_task(task: &Task, pb: &ProgressBar) -> Result<()> {
+fn run_task(task: &Task, pb: &ProgressBar, root: &Path) -> Result<()> {
+    let workdir = if task.workdir.is_absolute() {
+        task.workdir.clone()
+    } else {
+        root.join(&task.workdir)
+    };
+
     let mut cmd = Command::new(&task.shell)
-        .arg(task.script.to_str().context("Invalid script path")?)
-        .current_dir(&task.workdir)
+        .arg(task.script.as_os_str())
+        .current_dir(&workdir)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()

@@ -99,7 +99,11 @@ pub struct LinkArgs {
 }
 
 #[derive(Clone, Debug, clap::Parser)]
-pub struct InstallArgs {}
+pub struct InstallArgs {
+    /// Path to the link files
+    #[arg(long, short, default_value = ".")]
+    pub path: PathBuf,
+}
 
 #[derive(Clone, Debug, clap::Parser)]
 pub struct GenerateJsonSchemaArgs {
