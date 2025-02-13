@@ -29,13 +29,13 @@ pub enum Commands {
     Ask(AskArgs),
 
     /// Render dotfile templates
-    Render(RenderArgs),
+    Render,
 
     /// Link files
-    Link(LinkArgs),
+    Link,
 
     /// Run install scripts
-    Install(InstallArgs),
+    Install,
 
     /// Generate shell completions
     Completions {
@@ -53,6 +53,10 @@ pub struct GlobalArgs {
     /// Config file
     #[clap(short, long = "config", default_value = "sams.toml")]
     pub config_path: PathBuf,
+
+    /// Root directory
+    #[clap(short, long, default_value = ".")]
+    pub root: PathBuf,
 }
 
 #[derive(Clone, Debug, clap::Parser)]
@@ -82,27 +86,6 @@ pub struct AskArgs {
     /// Overwrite existing answers file
     #[arg(long)]
     pub force: bool,
-}
-
-#[derive(Clone, Debug, clap::Parser)]
-pub struct RenderArgs {
-    /// Path to the template files
-    #[arg(long, short, default_value = ".")]
-    pub path: PathBuf,
-}
-
-#[derive(Clone, Debug, clap::Parser)]
-pub struct LinkArgs {
-    /// Path to the link files
-    #[arg(long, short, default_value = ".")]
-    pub path: PathBuf,
-}
-
-#[derive(Clone, Debug, clap::Parser)]
-pub struct InstallArgs {
-    /// Path to the link files
-    #[arg(long, short, default_value = ".")]
-    pub path: PathBuf,
 }
 
 #[derive(Clone, Debug, clap::Parser)]

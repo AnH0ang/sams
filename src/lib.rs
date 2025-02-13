@@ -31,20 +31,20 @@ pub fn run(
             commands::ask::ask(arg, &global_args)?;
             Ok(ExitCode::SUCCESS)
         },
-        Commands::Render(args) => {
-            commands::render::render(args, &global_args)?;
+        Commands::Render => {
+            commands::render::render(&global_args)?;
             Ok(ExitCode::SUCCESS)
         },
-        Commands::Link(args) => {
-            commands::link::link(args, &global_args)?;
+        Commands::Link => {
+            commands::link::link(&global_args)?;
             Ok(ExitCode::SUCCESS)
         },
         Commands::Completions { shell } => {
             shell.generate(&mut Args::command(), &mut std::io::stdout());
             Ok(ExitCode::SUCCESS)
         },
-        Commands::Install(args) => {
-            commands::install::install(args, &global_args)?;
+        Commands::Install => {
+            commands::install::install(&global_args)?;
             Ok(ExitCode::SUCCESS)
         },
         Commands::GenerateJsonSchema(args) => {

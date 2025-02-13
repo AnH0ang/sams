@@ -7,11 +7,11 @@ use anyhow::{Context, Result};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 
-use crate::args::{GlobalArgs, InstallArgs};
+use crate::args::GlobalArgs;
 use crate::config::{Config, Task};
 
-pub fn install(args: InstallArgs, global: &GlobalArgs) -> Result<()> {
-    let cfg = Config::from_file(&global.config_path)?;
+pub fn install(global: &GlobalArgs) -> Result<()> {
+    let cfg = Config::from_args(global)?;
     let pb = progress_bar(cfg.tasks.len() as u64);
 
     for (idx, task) in cfg.tasks.iter().enumerate() {
@@ -21,7 +21,7 @@ pub fn install(args: InstallArgs, global: &GlobalArgs) -> Result<()> {
             .unwrap_or_else(|| task.script.to_str().unwrap());
         pb.set_prefix(format!("{:>8} {}", "Running".yellow().bold(), name.bold()));
 
-        run_task(task, &pb, &args.path)
+        run_task(task, &pb, &global.root)
             .with_context(|| format!("Failed to execute task: {}", name))?;
 
         pb.set_message("");

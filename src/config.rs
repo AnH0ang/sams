@@ -8,6 +8,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use toml;
 
+use crate::args::GlobalArgs;
+
 /// The configuration of the application
 #[derive(Serialize, Deserialize, Debug, PartialEq, JsonSchema)]
 pub struct Config {
@@ -147,6 +149,10 @@ pub enum DataType {
 }
 
 impl Config {
+    pub fn from_args(global: &GlobalArgs) -> Result<Self> {
+        Self::from_file(&global.root.join(&global.config_path))
+    }
+
     pub fn from_file(file_path: &PathBuf) -> Result<Self> {
         let mut file = File::open(file_path)
             .with_context(|| format!("Failed to open config file at '{}'", file_path.display()))?;

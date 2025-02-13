@@ -1,19 +1,19 @@
 use anyhow::{Context, Result};
 use colored::Colorize;
 
-use crate::args::{GlobalArgs, RenderArgs};
+use crate::args::GlobalArgs;
 use crate::config::Config;
 use crate::context::read_context;
 use crate::template::render_template;
 use crate::walk::WalkOptions;
 
-pub fn render(args: RenderArgs, global: &GlobalArgs) -> Result<()> {
-    let cfg = Config::from_file(&global.config_path)?;
+pub fn render(global: &GlobalArgs) -> Result<()> {
+    let cfg = Config::from_args(global)?;
     let ctx = read_context(&cfg.answer_file)?;
 
     let walker = WalkOptions::from_config(&cfg)
         .with_extension(cfg.template_suffix)
-        .walk(&args.path)
+        .walk(&global.root)
         .context("Failed to walk directory")?;
 
     // Skip the root entry and render each subsequent entry.
@@ -113,13 +113,11 @@ mod tests {
         create_template(&template_in_excluded, "key={{ key }}");
 
         // Run render function
-        let args = RenderArgs {
-            path: tmp_path.to_path_buf(),
-        };
         let global_args = GlobalArgs {
+            root: tmp_path.to_path_buf(),
             config_path: config_path.clone(),
         };
-        render(args, &global_args).expect("Render function failed");
+        render(&global_args).expect("Render function failed");
 
         // Assertions
         assert_eq!(
@@ -145,34 +143,30 @@ mod tests {
 
         // Test missing answer file
         setup_config(&config_path, &answer_path, "tera", vec![]);
-        let args = RenderArgs {
-            path: tmp_path.to_path_buf(),
-        };
         let global_args = GlobalArgs {
+            root: tmp_path.to_path_buf(),
             config_path: config_path.clone(),
         };
-        let result = render(args, &global_args);
+        let result = render(&global_args);
         assert!(result.is_err(), "Should error on missing answer file");
 
         // Test invalid TOML
         setup_answers(&answer_path, "invalid = toml here");
-        let args = RenderArgs {
-            path: tmp_path.to_path_buf(),
-        };
         let global_args = GlobalArgs {
+            root: tmp_path.to_path_buf(),
             config_path: config_path.clone(),
         };
-        let result = render(args, &global_args);
+        let result = render(&global_args);
         assert!(result.is_err(), "Should error on invalid TOML");
 
         // Test invalid template syntax
         setup_answers(&answer_path, r#"key = "value""#);
         create_template(&invalid_template_path, "{{ invalid syntax }}");
-        let args = RenderArgs {
-            path: tmp_path.to_path_buf(),
+        let global_args = GlobalArgs {
+            root: tmp_path.to_path_buf(),
+            config_path,
         };
-        let global_args = GlobalArgs { config_path };
-        let result = render(args, &global_args);
+        let result = render(&global_args);
         assert!(result.is_err(), "Should error on invalid template syntax");
     }
 }

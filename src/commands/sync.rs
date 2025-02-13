@@ -1,8 +1,6 @@
-use std::path::PathBuf;
-
 use anyhow::Result;
 
-use crate::args::{AskArgs, GlobalArgs, InstallArgs, LinkArgs, RenderArgs, SyncArgs};
+use crate::args::{AskArgs, GlobalArgs, SyncArgs};
 use crate::commands::ask::ask;
 use crate::commands::install::install;
 use crate::commands::link::link;
@@ -14,22 +12,13 @@ pub fn sync(_args: SyncArgs, global: &GlobalArgs) -> Result<()> {
     ask(args, global)?;
 
     // Link link
-    let args = LinkArgs {
-        path: PathBuf::from("."),
-    };
-    link(args, global)?;
+    link(global)?;
 
     // Render templates
-    let args = RenderArgs {
-        path: PathBuf::from("."),
-    };
-    render(args, global)?;
+    render(global)?;
 
     // Install
-    let args = InstallArgs {
-        path: PathBuf::from("."),
-    };
-    install(args, global)?;
+    install(global)?;
 
     Ok(())
 }

@@ -11,7 +11,9 @@ use crate::config::{Config, DataType, Parameter, Value};
 pub fn ask(args: AskArgs, global: &GlobalArgs) -> Result<()> {
     let cfg = Config::from_file(&global.config_path)?;
 
-    if !args.force && cfg.answer_file.exists() {
+    let answer_file = global.root.join(&cfg.answer_file);
+
+    if !args.force && answer_file.exists() {
         return Ok(());
     }
 
@@ -59,8 +61,8 @@ pub fn ask(args: AskArgs, global: &GlobalArgs) -> Result<()> {
     let toml_string = toml::to_string(&answers)?;
 
     // Write the answers using std::fs::write (simpler than OpenOptions)
-    fs::write(&cfg.answer_file, toml_string.as_bytes())
-        .with_context(|| format!("Failed to write answers to file: {:?}", cfg.answer_file))?;
+    fs::write(&answer_file, toml_string.as_bytes())
+        .with_context(|| format!("Failed to write answers to file: {:?}", answer_file))?;
 
     Ok(())
 }
