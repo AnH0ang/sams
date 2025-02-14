@@ -50,8 +50,8 @@ pub fn run(Args { global, command }: Args) -> Result<ExitCode> {
             commands::pull::pull(&global)?;
             Ok(ExitCode::SUCCESS)
         },
-        Commands::GenerateJsonSchema(args) => {
-            commands::generate_json_schema::generate_json_schema(args)?;
+        Commands::JsonSchema(args) => {
+            commands::jsonschema::generate_json_schema(args)?;
             Ok(ExitCode::SUCCESS)
         },
     }

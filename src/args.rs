@@ -52,7 +52,7 @@ pub enum Commands {
 
     /// Generate json schema for `sams.toml` config file
     #[command(hide = true)]
-    GenerateJsonSchema(GenerateJsonSchemaArgs),
+    JsonSchema(JsonSchemaArgs),
 }
 
 #[derive(Clone, Debug, clap::Parser)]
@@ -110,7 +110,7 @@ pub struct AskArgs {
 }
 
 #[derive(Clone, Debug, clap::Parser)]
-pub struct GenerateJsonSchemaArgs {
+pub struct JsonSchemaArgs {
     /// Output file
     #[arg(short, long, default_value = "sams.schema.json")]
     pub file: PathBuf,
