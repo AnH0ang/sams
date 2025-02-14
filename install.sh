@@ -1,9 +1,49 @@
 #!/bin/bash
 
-# Variables
+# Default variables
 REPO="AnH0ang/sams"
 VERSION="latest"
 INSTALL_DIR="/usr/local/bin"
+
+# Function to display help message
+usage() {
+  echo "Usage: $0 [-v version] [-h] [--uninstall]"
+  echo "  -v, --version   Specify the version to install (default: latest)"
+  echo "  -h, --help      Show this help message"
+  echo "  --uninstall     Uninstall sams"
+  exit 0
+}
+
+# Function to uninstall sams
+uninstall() {
+  echo "Uninstalling sams..."
+  sudo rm -f $INSTALL_DIR/sams || {
+    echo "Failed to remove sams from $INSTALL_DIR"
+    exit 1
+  }
+  echo "sams uninstalled successfully."
+  exit 0
+}
+
+# Parse command-line arguments
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    -v|--version)
+      VERSION="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      ;;
+    --uninstall)
+      uninstall
+      ;;
+    *)
+      echo "Unknown option: $1"
+      usage
+      ;;
+  esac
+done
 
 # Detect the operating system
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -16,7 +56,7 @@ else
   exit 1
 fi
 
-# Get the latest release if version is not specified
+# Get the release URL
 if [[ "$VERSION" == "latest" ]]; then
   RELEASE_URL="https://api.github.com/repos/$REPO/releases/latest"
 else
@@ -63,7 +103,6 @@ sudo mv sams $INSTALL_DIR/sams || {
   echo "Failed to move sams to $INSTALL_DIR"
   exit 1
 }
-
 
 # Clean up
 rm $ASSET_NAME
